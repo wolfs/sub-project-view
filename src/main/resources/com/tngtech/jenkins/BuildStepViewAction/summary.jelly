@@ -1,0 +1,15 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+    xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+    xmlns:i="jelly:fmt">
+    <j:set var="iconSize" value="32x32"/>
+    <table>
+        <j:forEach var="a" items="${it.builderInfos}">
+            <tr>
+                <j:forEach var="proj" items="${a.projects}">
+                    <t:ballColorTd it="${proj.iconColor}" />
+                    <td>${proj.name}</td>
+                </j:forEach>
+            </tr>
+        </j:forEach>
+    </table>
+</j:jelly>
