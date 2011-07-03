@@ -1,4 +1,4 @@
-package com.tngtech.jenkins;
+package org.jenkins.plugins.buildstepview;
 
 import hudson.Util;
 import hudson.model.Action;
