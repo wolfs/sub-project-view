@@ -1,9 +1,7 @@
 package org.jenkins.plugins.buildstepview.SubProjectView
 
 import org.apache.commons.jelly.XMLOutput
-import org.dom4j.Element
 import org.dom4j.io.SAXContentHandler
-import org.dom4j.Node
 
 f=namespace(lib.FormTagLib)
 l=namespace(lib.LayoutTagLib)
@@ -46,33 +44,14 @@ def content(columnExtensions, projects) {
          style: 'margin-top:0px; border-top: none;') {
     showHeaders(columnExtensions)
 
-    row = 0
+    Integer row = 0
     for (job in projects) {
-      Map sortColumnValues = [:]
-      Integer column = 0
-      nodeLabel = addJobNode(job, columnExtensions, row) {
-        List<Element> content = it.getDocument().getRootElement().content()
-        for (n in content) {
-          def prevData = n.attribute('data')
-          String data = prevData?.value ?: getTextContents(n)
-          sortColumnValues.put(column, data)
-          column++
-        }
-      }
-      row++
+      nodeLabel = addJobNode(job, columnExtensions, row)
+      row ++
 
       def subProjects = my.getSubProjects(job)
       for (subProject in subProjects) {
-        column = 0
         addJobNode(subProject,columnExtensions,row) {
-          List<Element> content = it.getDocument().getRootElement().content()
-          for (n in content) {
-            def prevData = n.attribute('data')
-            String data = prevData?.value ?: getTextContents(n)
-
-            n.addAttribute('data', sortColumnValues[column] + data)
-            column ++
-          }
           addChildAttribute(it, nodeLabel)
         }
         row ++
@@ -91,25 +70,6 @@ private def addJobNode(job, columnExtensions, row, Closure xmlModifier = {}) {
   xmlModifier(sc)
   raw(sc.getDocument().asXML())
   return nodeLabel
-}
-
-private def getTextContents(Node x) {
-  if (x.getNodeType() == Node.TEXT_NODE) {
-    return x.getText()
-  }
-  Element el = x;
-  String test = ""
-  for (subNode in el.content()) {
-    switch(subNode.getNodeType()) {
-      case Node.ELEMENT_NODE:
-        test = test + getTextContents(subNode)
-        break
-      case Node.TEXT_NODE:
-        test = test + x.getText()
-        break
-    }
-  }
-  return test
 }
 
 private def addChildAttribute(SAXContentHandler sc, parent) {
