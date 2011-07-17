@@ -1,7 +1,9 @@
 package org.jenkins.plugins.buildstepview.SubProjectView
 
 import org.apache.commons.jelly.XMLOutput
+import org.dom4j.Element
 import org.dom4j.io.SAXContentHandler
+import org.dom4j.Node
 
 f=namespace(lib.FormTagLib)
 l=namespace(lib.LayoutTagLib)
@@ -44,28 +46,84 @@ def content(columnExtensions, projects) {
          style: 'margin-top:0px; border-top: none;') {
     showHeaders(columnExtensions)
 
-    def i = 0;
+    row = 0
     for (job in projects) {
-      def sc = wrapOutput() {
-        projectRow(job, columnExtensions)
+      Map sortColumnValues = [:]
+      Integer column = 0
+      nodeLabel = addJobNode(job, columnExtensions, row) {
+        List<Element> content = it.getDocument().getRootElement().content()
+        for (n in content) {
+          def prevData = n.attribute('data')
+          String data = prevData?.value ?: getTextContents(n)
+          sortColumnValues.put(column, data)
+          column++
+        }
       }
-      addNodeAttribute(sc, i)
-      if (i!=0) {
-        addChildAttribute(sc, 0)
+      row++
+
+      def subProjects = my.getSubProjects(job)
+      for (subProject in subProjects) {
+        column = 0
+        addJobNode(subProject,columnExtensions,row) {
+          List<Element> content = it.getDocument().getRootElement().content()
+          for (n in content) {
+            def prevData = n.attribute('data')
+            String data = prevData?.value ?: getTextContents(n)
+
+            n.addAttribute('data', sortColumnValues[column] + data)
+            column ++
+          }
+          addChildAttribute(it, nodeLabel)
+        }
+        row ++
       }
-      raw(sc.getDocument().asXML())
-      i++;
     }
   }
 
 }
 
+private def addJobNode(job, columnExtensions, row, Closure xmlModifier = {}) {
+  def sc = wrapOutput() {
+    projectRow(job, columnExtensions)
+  }
+  def nodeLabel = job.fullName + "-RowNum" + row
+  addNodeAttribute(sc, nodeLabel)
+  xmlModifier(sc)
+  raw(sc.getDocument().asXML())
+  return nodeLabel
+}
+
+private def getTextContents(Node x) {
+  if (x.getNodeType() == Node.TEXT_NODE) {
+    return x.getText()
+  }
+  Element el = x;
+  String test = ""
+  for (subNode in el.content()) {
+    switch(subNode.getNodeType()) {
+      case Node.ELEMENT_NODE:
+        test = test + getTextContents(subNode)
+        break
+      case Node.TEXT_NODE:
+        test = test + x.getText()
+        break
+    }
+  }
+  return test
+}
+
 private def addChildAttribute(SAXContentHandler sc, parent) {
-  sc.getDocument().getRootElement().addAttribute("class", "child-of-node-${parent}")
+  addAttributes(sc, ["class": "child-of-node-${parent}"])
+}
+
+private def addAttributes(SAXContentHandler sc, Map attributes) {
+  for (e in attributes) {
+    sc.getDocument().getRootElement().addAttribute(e.key, e.value)
+  }
 }
 
 private def addNodeAttribute(SAXContentHandler sc, number) {
-  sc.getDocument().getRootElement().addAttribute("id", "node-${number}")
+  addAttributes(sc,["id":"node-${number}"])
 }
 
 private def wrapOutput(Closure viewInstructions) {

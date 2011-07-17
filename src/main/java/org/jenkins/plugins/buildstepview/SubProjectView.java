@@ -2,12 +2,10 @@ package org.jenkins.plugins.buildstepview;
 
 import com.google.common.collect.ImmutableList;
 import hudson.Extension;
-import hudson.Indenter;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
-import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.model.ViewDescriptor;
 import hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig;
@@ -39,52 +37,23 @@ public class SubProjectView extends ListView {
         return ImmutableList.<View>of(this);
     }
 
-    public AbstractProject<?,?> getBaseProject() {
-        return (AbstractProject<?, ?>) getItems().iterator().next();
-    }
-
-    public Indenter<AbstractProject<?,?>> getIndenter() {
-        return new Indenter<AbstractProject<?, ?>>() {
-            @Override
-            protected int getNestLevel(AbstractProject<?, ?> job) {
-                if (subProjects.contains(job)) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            }
-        };
-    }
-
-    private List<AbstractProject> subProjects;
-
-    @Override
-    public List<TopLevelItem> getItems() {
-        ArrayList<TopLevelItem> newItems = new ArrayList<TopLevelItem>();
-        subProjects = new ArrayList<AbstractProject>();
-        List<TopLevelItem> items = super.getItems();
-        for (TopLevelItem item : items) {
-            newItems.add(item);
-            if(item instanceof FreeStyleProject) {
-                FreeStyleProject proj = (FreeStyleProject) item;
-                List<Builder> builders = proj.getBuilders();
-                for (Builder builder : builders) {
-                    if (builder instanceof TriggerBuilder) {
-                        TriggerBuilder tBuilder = (TriggerBuilder) builder;
-                        for (BlockableBuildTriggerConfig config : tBuilder.getConfigs()) {
-                            List<AbstractProject> projectList = config.getProjectList();
-                            subProjects.addAll(projectList);
-                            for (AbstractProject abstractProject : projectList) {
-                                if (abstractProject instanceof TopLevelItem) {
-                                    newItems.add((TopLevelItem) abstractProject);
-                                }
-                            }
+    public List<AbstractProject<?,?>> getSubProjects(AbstractProject<?,?> project) {
+        List<AbstractProject<?,?>> subProjects = new ArrayList<AbstractProject<?, ?>>();
+        if(project instanceof FreeStyleProject) {
+            FreeStyleProject proj = (FreeStyleProject) project;
+            List<Builder> builders = proj.getBuilders();
+            for (Builder builder : builders) {
+                if (builder instanceof TriggerBuilder) {
+                    TriggerBuilder tBuilder = (TriggerBuilder) builder;
+                    for (BlockableBuildTriggerConfig config : tBuilder.getConfigs()) {
+                        for (AbstractProject<?,?> abstractProject : config.getProjectList()) {
+                            subProjects.add( abstractProject);
                         }
                     }
                 }
             }
         }
-        return newItems;
+        return subProjects;
     }
 
     @Extension
