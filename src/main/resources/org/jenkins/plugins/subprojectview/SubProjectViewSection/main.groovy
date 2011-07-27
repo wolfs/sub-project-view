@@ -10,7 +10,7 @@ st=namespace("jelly:stapler")
 j=namespace("jelly:core")
 
 //jsHeader()
-script(type: "text/javascript") {
+script(type: 'text/javascript') {
   text("""jQuery(document).ready(function() {
   jQuery("#projectstatus2").treeTable({
   clickableNodeNames: true
@@ -19,81 +19,12 @@ script(type: "text/javascript") {
 )""")
 }
 script(type: "text/javascript") {
- text('jQuery(document).ready(function() { var foo = ')
- st.bind(value: section)
- text(""";
-//    var updateBalls = function() {
-//      var jobList = new Array();
-//      jQuery("td[jobname]").each(function() {
-//        var size = jQuery(this).children('img').attr('class');
-//        jobList.push({
-//          'jobname': this.getAttribute('jobname'),
-//          'status': { 'size': size }
-//        });
-//      });
-//      foo.areRunningBalls(jobList, function(t){
-//        var result = t.responseObject();
-//        jQuery("td[jobname]").each(function() {
-//          var jobName = this.getAttribute('jobname');
-//          jQuery(this).children('img').each(function() {
-//          var ball = result[jobName].status;
-//          var imgTag = this;
-//          imgTag.alt = ball.description;
-//          imgTag.src = ball.image;
-//          imgTag.tooltip = ball.description;
-//          })
-//        });
-//        setTimeout(function() {updateBalls()},4000);
-//      })
-//    }
-//    updateBalls();
-//  });
-var ajaxUpdater = function(spec) {
-    var my = {};
-    my.jsProxy = spec.jsProxy;
-    my.extraArgs = {
-        name: 'status',
-        extractFunction: function(node) {
-            var size = jQuery(node).children('img').attr('class');
-            return { 'size': size }
-        },
-        updateFunction: function(node,status) {
-            jQuery(node).children('img').each(function() {
-                var imgTag = this;
-                imgTag.alt = status.description;
-                imgTag.src = status.image;
-                imgTag.tooltip = status.description;
-            })
-        }
-    }
-
-    var that = {};
-
-    that.ajaxUpdate = function() {
-        var jobList = new Array();
-        jQuery("td[jobname]").each(function() {
-            var toSend = {
-                'jobname': this.getAttribute('jobname')
-            }
-            toSend[my.extraArgs.name] = my.extraArgs.extractFunction(this);
-            jobList.push(toSend);
-        });
-        my.jsProxy.areRunningBalls(jobList, function(t){
-          var result = t.responseObject();
-          jQuery("td[jobname]").each(function() {
-            var jobname = this.getAttribute('jobname');
-            my.extraArgs.updateFunction(this,result[jobname].status);
-          });
-          setTimeout(function() {that.ajaxUpdate()},4000);
-        });
-    }
-    that.updateStatus = function(node,status) {
-    }
-    return that;
-}
-ajaxUpdater({jsProxy:foo}).ajaxUpdate()
-});
-""")
+ text("""ajaxUpdaters.subProjectViewAjaxUpdater = ajaxUpdaters.newUpdater({jsProxy:""")
+  st.bind(value: section)
+  text("""})
+  jQuery(document).ready(function() {
+    ajaxUpdaters.subProjectViewAjaxUpdater.ajaxUpdate();
+});""")
 }
 if (section.name.length() > 0) {
   h2(section.name)
@@ -102,6 +33,23 @@ if(section.items.empty) {
   p("No jobs in this section.")
 } else {
   def columnExtensions = section.columns ?: section.defaultColumns
+  script(type: 'text/javascript',src: "${rootURL}/plugin/build-step-view/js/statusUpdater.js")
+//  script(type: 'text/javascript') {
+//    text("""ajaxUpdaters.subProjectViewAjaxUpdater.registerUpdater('status',{
+//            extractFunction: function(node) {
+//                var size = jQuery(node).children('img').attr('class');
+//                return { 'size': size }
+//            },
+//            updateFunction: function(node,status) {
+//                jQuery(node).children('img').each(function() {
+//                    var imgTag = this;
+//                    imgTag.alt = status.description;
+//                    imgTag.src = status.image;
+//                    imgTag.tooltip = status.description;
+//                })
+//            }
+//        });""")
+//  }
   content(columnExtensions, section.items)
 }
 
