@@ -1,4 +1,4 @@
-package org.jenkins.plugins.buildstepview;
+package org.jenkins.plugins.subprojectview;
 
 import com.google.common.collect.ImmutableList;
 import hudson.Extension;

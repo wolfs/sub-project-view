@@ -1,4 +1,4 @@
-package org.jenkins.plugins.buildstepview;
+package org.jenkins.plugins.subprojectview;
 
 import hudson.Extension;
 import hudson.Launcher;

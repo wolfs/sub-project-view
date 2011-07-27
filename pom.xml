@@ -8,8 +8,8 @@
             against? -->
     </parent>
 
-    <groupId>com.tngtech.jenkins</groupId>
-    <artifactId>build-step-view</artifactId>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>sub-project-view</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
@@ -24,6 +24,12 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>jquery</artifactId>
             <version>1.0.2</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.hudson.plugins</groupId>
+            <artifactId>sectioned-view</artifactId>
+            <version>1.15</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

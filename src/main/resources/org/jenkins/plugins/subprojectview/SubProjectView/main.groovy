@@ -1,4 +1,4 @@
-package org.jenkins.plugins.buildstepview.SubProjectView
+package org.jenkins.plugins.subprojectview.SubProjectView
 
 import org.apache.commons.jelly.XMLOutput
 import org.dom4j.io.SAXContentHandler
@@ -9,8 +9,14 @@ t=namespace("/lib/hudson")
 st=namespace("jelly:stapler")
 j=namespace("jelly:core")
 
-jsHeader()
-
+//jsHeader()
+script(type: "text/javascript") {
+  text("""jQuery(document).ready(function() {
+  jQuery("#projectstatus").treeTable({
+  clickableNodeNames: true
+  });
+})""")
+}
 if (items.empty) {
   noProjectPage();
 } else {
