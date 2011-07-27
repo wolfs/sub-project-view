@@ -9,6 +9,7 @@ ajaxUpdaters.subProjectViewAjaxUpdater.registerUpdater('status',{
             imgTag.alt = status.description;
             imgTag.src = status.image;
             imgTag.tooltip = status.description;
+            imgTag.title = status.description;
         })
     }
 });
